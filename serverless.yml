@@ -1,0 +1,39 @@
+service: apollo-lambda
+provider:
+  name: aws
+  region: us-east-1
+  runtime: nodejs14.x
+plugins:
+  - serverless-offline
+  - serverless-mocha-plugin
+functions:
+  graphql:
+    handler: graphql.graphqlHandler
+    events:
+    - http:
+        path: graphql
+        method: post
+        cors: true
+    - http:
+        path: graphql
+        method: get
+        cors: true
+  otf:
+    handler: index.handler
+    events:
+    - http:
+        path: /
+        method: post
+        cors: true
+    - http:
+        path: /
+        method: get
+        cors: true
+    - http:
+        path: /
+        method: put
+        cors: true
+    - http:
+        path: /
+        method: delete
+        cors: true

@@ -1,0 +1,31 @@
+{
+  "name": "otf",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "sls invoke test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sednus/otf.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sednus/otf/issues"
+  },
+  "homepage": "https://github.com/sednus/otf#readme",
+  "dependencies": {
+    "apollo-server-lambda": "^3.7.0",
+    "axios": "^0.27.2",
+    "chai": "^4.3.6",
+    "dynamodb-local": "^0.0.31",
+    "graphql": "^16.4.0"
+  },
+  "devDependencies": {
+    "serverless-mocha-plugin": "^1.12.0",
+    "serverless-offline": "^8.7.0"
+  }
+}
