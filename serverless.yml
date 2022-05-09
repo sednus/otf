@@ -4,6 +4,7 @@ provider:
   region: us-east-1
   runtime: nodejs14.x
 plugins:
+  - serverless-dynamodb-local
   - serverless-offline
   - serverless-mocha-plugin
 functions:
@@ -37,3 +38,22 @@ functions:
         path: /
         method: delete
         cors: true
+resources:
+  Resources:
+    usersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: OTFUser
+        AttributeDefinitions:
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: email
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+custom:
+  dynamodb:
+    stages:
+      - dev

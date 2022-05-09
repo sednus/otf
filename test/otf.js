@@ -1,18 +1,14 @@
 'use strict';
-
+const Users = require('../user');
 const { default: axios } = require('axios');
+const AWS = require('aws-sdk');
 const mochaPlugin = require('serverless-mocha-plugin');
-const DynamoDbLocal = require('dynamodb-local');
-const dynamoLocalPort = 8000;
- 
- 
 const expect = mochaPlugin.chai.expect;
-let wrapped = mochaPlugin.getWrapper('otf', '/index.js', 'handler');
 
-describe('OTF User API Test', async () => {
-
-  const child = await DynamoDbLocal.launch(dynamoLocalPort, null, [], false, true); // must be wrapped in async function
+describe('OTF User Test', async () => {
   let randomUser;
+  let modified;
+  let userAPI;
 
   before(async () => {
     const response = await axios.get('https://randomuser.me/api/');
@@ -24,24 +20,54 @@ describe('OTF User API Test', async () => {
       phone: randomData.phone,
       gender: randomData.gender,
     }
+
+    const db = new AWS.DynamoDB.DocumentClient({
+      region: 'localhost',
+      endpoint: 'http://localhost:8000',
+    });
+
+    userAPI = new Users(db);
   });
 
-  describe('test logic', ()=> {
+  describe('test logic', () => {
+    it('test post', async () => {
+      const response = await userAPI.putUser(randomUser);
+      expect(response).to.be.empty;
+    });
+
+    it('test get', async () => {
+      const users = await userAPI.getUsers();
+      expect(users).to.not.be.empty;
+      expect(users.Items).to.not.be.empty;
+      expect(users.Items).to.deep.include.members([randomUser]);
+    });
+
     it('test put', async ()=> {
-      const putData = {httpMethod: 'PUT', body: JSON.stringify(randomUser)}
-      const response = await wrapped.run(putData);
-      console.log('response:')
-      console.log(response)
+      const modifiedName = 'test';
+      modified = {...randomUser};
+      delete modified.email;
+      modified.firstName = modifiedName;
+
+      const response = await userAPI.updateUser({
+        key: randomUser.email,
+        data: modified});
+
       expect(response).to.not.be.empty;
-      expect(response.statusCode).to.be.equal('200');
+      expect(response.Attributes).to.not.be.empty;
+      expect(response.Attributes.firstName).to.be.equal(modifiedName);
 
     });
-  });
-  it('implement tests here', async () => {
-    const response = await wrapped.run({});
-    
-    expect(response).to.not.be.empty;
+
+    it('test delete', async () => {
+      const response = await userAPI.deleteUser({
+        key: randomUser.email,
+      });
+
+      const users = await userAPI.getUsers();
+      expect(response).to.be.empty;
+      expect(users.Items).to.not.deep.include.members([randomUser]);
+    });
   });
 
-  await DynamoDbLocal.stopChild(child); // must be wrapped in async function
+  //TODO test error cases (invalid data types, values etc)
 });
